@@ -1,0 +1,80 @@
+#include "user_interface.h"
+
+typedef struct {
+	char* data;
+	size_t len;
+	size_t cap;
+} AppendBuffer;
+
+AppendBuffer ab;
+struct termios cooked;
+struct winsize ws;
+
+void enable_raw_mode() {
+    struct termios raw;
+
+    tcgetattr(STDIN_FILENO, &cooked);
+    raw = cooked;
+    cfmakeraw(&raw);
+
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+}
+
+void disable_raw_mode() {
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &cooked);
+}
+
+void ui_init() {
+    write(STDIN_FILENO, "\x1b[?1049h", 8);
+	enable_raw_mode();
+
+	ab.data = NULL;
+	ab.len = 0;
+	ab.cap = 0;
+}
+
+void ui_exit() {
+    write(STDIN_FILENO, "\x1b[?1049l", 8);
+	disable_raw_mode();
+
+	free(ab.data);
+}
+
+size_t ui_rows() {
+	return ws.ws_row;
+}
+
+size_t ui_cols() {
+	return ws.ws_col;
+}
+
+Key ui_read_key() {
+    char c;
+    read(STDIN_FILENO, &c, 1);
+    return c;
+}
+
+void ui_draw(char *str) {
+	size_t str_len = strlen(str);
+
+    if (str_len > ab.cap - ab.len) {
+        while (str_len > ab.cap - ab.len) {
+            if (ab.cap == 0) {
+                ab.cap = AB_INIT_SIZE;
+            } else {
+                ab.cap *= AB_GROWTH_FACTOR;
+            }
+        }
+
+        ab.data = realloc(ab.data, ab.cap);
+    }
+
+	memcpy(ab.data + ab.len, str, str_len);
+	ab.len += str_len;
+}
+
+void ui_update() {
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
+	write(STDOUT_FILENO, ab.data, ab.len);
+	ab.len = 0;
+}
