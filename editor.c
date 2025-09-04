@@ -8,6 +8,8 @@ struct {
     TextBuffer *tb;
     Mode mode;
     char msg[50];
+    size_t cursor;
+    size_t draw_off, col_off;
 } editor;
 
 void ed_set_mode(Mode mode) {
@@ -31,6 +33,27 @@ void ed_process_key(Key key) {
 }
 
 void ed_render() {
+    size_t cx = 0, cy = 0;
+    size_t i = editor.draw_off + editor.col_off;
+
+    while (i < tb_length(editor.tb) && cy < ui_rows() - 1) {
+        char ch = tb_get(editor.tb, i);
+
+        if (ch == '\n' || cx == ui_cols() - 1) {
+            if (cx < ui_cols() - 1) {
+                ui_draw("\n\r");
+            }
+            cx = 0;
+            cy++;
+            i += editor.col_off;
+        } else {
+            ui_draw_ch(ch);
+            cx++;
+        }
+
+        i++;
+    }
+
     ui_draw(editor.msg);
 }
 
@@ -38,6 +61,8 @@ void ed_init() {
     ui_init();
     editor.tb = tb_new();
     editor.mode = NORMAL;
+    editor.draw_off = 0;
+    editor.col_off = 0;
 }
 
 void ed_exit() {
@@ -51,7 +76,7 @@ int main(int argc, char **argv) {
 
     if (argc > 1) {
         tb_load_file(editor.tb, argv[1]);
-        tb_debug(editor.tb);
+        //tb_debug(editor.tb);
     }
 
     do {

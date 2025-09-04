@@ -20,4 +20,5 @@ size_t ui_cols();
 
 Key ui_read_key();
 void ui_draw(char *str);
+void ui_draw_ch(char ch);
 void ui_update();

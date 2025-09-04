@@ -24,6 +24,20 @@ void disable_raw_mode() {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &cooked);
 }
 
+void ab_reserve(size_t additional) {
+    if (additional > ab.cap - ab.len) {
+        while (additional > ab.cap - ab.len) {
+            if (ab.cap == 0) {
+                ab.cap = AB_INIT_SIZE;
+            } else {
+                ab.cap *= AB_GROWTH_RATE;
+            }
+        }
+
+        ab.data = realloc(ab.data, ab.cap);
+    }
+}
+
 void ui_init() {
     write(STDIN_FILENO, "\x1b[?1049h", 8);
     enable_raw_mode();
@@ -31,6 +45,7 @@ void ui_init() {
     ab.data = NULL;
     ab.len = 0;
     ab.cap = 0;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
 }
 
 void ui_exit() {
@@ -55,22 +70,15 @@ Key ui_read_key() {
 }
 
 void ui_draw(char *str) {
-    size_t str_len = strlen(str);
+    size_t len = strlen(str);
+    ab_reserve(len);
+    memcpy(ab.data + ab.len, str, len);
+    ab.len += len;
+}
 
-    if (str_len > ab.cap - ab.len) {
-        while (str_len > ab.cap - ab.len) {
-            if (ab.cap == 0) {
-                ab.cap = AB_INIT_SIZE;
-            } else {
-                ab.cap *= AB_GROWTH_RATE;
-            }
-        }
-
-        ab.data = realloc(ab.data, ab.cap);
-    }
-
-    memcpy(ab.data + ab.len, str, str_len);
-    ab.len += str_len;
+void ui_draw_ch(char ch) {
+    ab_reserve(1);
+    ab.data[ab.len++] = ch;
 }
 
 void ui_update() {
