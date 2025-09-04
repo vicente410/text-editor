@@ -5,7 +5,10 @@
 #include <unistd.h>
 
 #define AB_INIT_SIZE 16
-#define AB_GROWTH_FACTOR 2
+#define AB_GROWTH_RATE 2
+
+#define CLEAR_SCREEN "\x1b[2J"
+#define MOVE_CURSOR_0_0 "\x1b[H"
 
 typedef char Key;
 

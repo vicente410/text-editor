@@ -1,9 +1,9 @@
 #include "user_interface.h"
 
 typedef struct {
-	char* data;
-	size_t len;
-	size_t cap;
+    char *data;
+    size_t len;
+    size_t cap;
 } AppendBuffer;
 
 AppendBuffer ab;
@@ -26,26 +26,26 @@ void disable_raw_mode() {
 
 void ui_init() {
     write(STDIN_FILENO, "\x1b[?1049h", 8);
-	enable_raw_mode();
+    enable_raw_mode();
 
-	ab.data = NULL;
-	ab.len = 0;
-	ab.cap = 0;
+    ab.data = NULL;
+    ab.len = 0;
+    ab.cap = 0;
 }
 
 void ui_exit() {
     write(STDIN_FILENO, "\x1b[?1049l", 8);
-	disable_raw_mode();
+    disable_raw_mode();
 
-	free(ab.data);
+    free(ab.data);
 }
 
 size_t ui_rows() {
-	return ws.ws_row;
+    return ws.ws_row;
 }
 
 size_t ui_cols() {
-	return ws.ws_col;
+    return ws.ws_col;
 }
 
 Key ui_read_key() {
@@ -55,26 +55,27 @@ Key ui_read_key() {
 }
 
 void ui_draw(char *str) {
-	size_t str_len = strlen(str);
+    size_t str_len = strlen(str);
 
     if (str_len > ab.cap - ab.len) {
         while (str_len > ab.cap - ab.len) {
             if (ab.cap == 0) {
                 ab.cap = AB_INIT_SIZE;
             } else {
-                ab.cap *= AB_GROWTH_FACTOR;
+                ab.cap *= AB_GROWTH_RATE;
             }
         }
 
         ab.data = realloc(ab.data, ab.cap);
     }
 
-	memcpy(ab.data + ab.len, str, str_len);
-	ab.len += str_len;
+    memcpy(ab.data + ab.len, str, str_len);
+    ab.len += str_len;
 }
 
 void ui_update() {
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
-	write(STDOUT_FILENO, ab.data, ab.len);
-	ab.len = 0;
+    write(STDOUT_FILENO, CLEAR_SCREEN MOVE_CURSOR_0_0, 7);
+    write(STDOUT_FILENO, ab.data, ab.len);
+    ab.len = 0;
 }

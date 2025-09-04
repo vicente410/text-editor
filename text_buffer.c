@@ -50,7 +50,7 @@ void tb_reserve(TextBuffer *tb, size_t additional) {
 
 TextBuffer *tb_new() {
     TextBuffer *tb = malloc(sizeof(TextBuffer));
-   	tb->data = NULL;
+    tb->data = NULL;
     tb->size = 0;
     tb->gap_start = 0;
     tb->gap_end = 0;
@@ -58,7 +58,7 @@ TextBuffer *tb_new() {
 }
 
 void tb_free(TextBuffer *tb) {
-	free(tb->data);
+    free(tb->data);
     free(tb);
 }
 
@@ -105,7 +105,7 @@ void tb_load_file(TextBuffer *tb, char *path) {
 }
 
 void tb_save_file(TextBuffer *tb, char *path) {
-	FILE *fd = fopen(path, "w+");
+    FILE *fd = fopen(path, "w+");
 
     for (size_t i = 0; i < tb_length(tb); i++) {
         fputc(tb_get(tb, i), fd);
@@ -143,71 +143,71 @@ void tb_remove_ch(TextBuffer *tb, size_t idx) {
 }
 
 bool tb_find(TextBuffer *tb, size_t *idx, char *str) {
-	size_t len = strlen(str);
-	size_t i = *idx;
+    size_t len = strlen(str);
+    size_t i = *idx;
 
-	if (len == 0) {
-		return true;
-	}
+    if (len == 0) {
+        return true;
+    }
 
-	while (tb_find_ch(tb, &i, str[0])) {
-		size_t j = 1;
+    while (tb_find_ch(tb, &i, str[0])) {
+        size_t j = 1;
 
-		while (j < len && str[j] == tb_get(tb, i + j)) {
-			j++;
-		}
+        while (j < len && str[j] == tb_get(tb, i + j)) {
+            j++;
+        }
 
-		if (j == len) {
-			*idx = i;
-			return true;
-		}
-	}
+        if (j == len) {
+            *idx = i;
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
 bool tb_findr(TextBuffer *tb, size_t *idx, char *str) {
-	size_t len = strlen(str);
-	size_t i = *idx;
+    size_t len = strlen(str);
+    size_t i = *idx;
 
-	if (len == 0) {
-		return true;
-	}
+    if (len == 0) {
+        return true;
+    }
 
-	while (tb_findr_ch(tb, &i, str[len - 1])) {
-		int j = len - 2;
+    while (tb_findr_ch(tb, &i, str[len - 1])) {
+        int j = len - 2;
 
-		while (j > 0 && str[j] == tb_get(tb, i - j)) {
-			j--;
-		}
+        while (j > 0 && str[j] == tb_get(tb, i - j)) {
+            j--;
+        }
 
-		if (j == 0) {
-			*idx = i - len;
-			return true;
-		}
-	}
+        if (j == 0) {
+            *idx = i - len;
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
 bool tb_find_ch(TextBuffer *tb, size_t *idx, char ch) {
-	for (size_t i = *idx + 1; i < tb_length(tb); i++) {
-		if (tb_get(tb, i) == ch) {
-			*idx = i;
-			return true;
-		}
-	}
+    for (size_t i = *idx + 1; i < tb_length(tb); i++) {
+        if (tb_get(tb, i) == ch) {
+            *idx = i;
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
 bool tb_findr_ch(TextBuffer *tb, size_t *idx, char ch) {
-	for (int i = *idx - 1; i >= 0; i--) {
-		if (tb_get(tb, i) == ch) {
-			*idx = i;
-			return true;
-		}
-	}
+    for (int i = *idx - 1; i >= 0; i--) {
+        if (tb_get(tb, i) == ch) {
+            *idx = i;
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
