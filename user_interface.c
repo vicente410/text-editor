@@ -9,6 +9,8 @@ typedef struct {
 AppendBuffer ab;
 struct termios cooked;
 struct winsize ws;
+size_t cursor_col = 0;
+size_t cursor_row = 0;
 
 void enable_raw_mode() {
     struct termios raw;
@@ -81,7 +83,16 @@ void ui_draw_ch(char ch) {
     ab.data[ab.len++] = ch;
 }
 
+void ui_set_cursor(size_t col, size_t row) {
+    cursor_col = col + 1;
+    cursor_row = row + 1;
+}
+
 void ui_update() {
+    char cursor_str[32];
+    sprintf(cursor_str, MOVE_CURSOR, cursor_col, cursor_row);
+    ui_draw(cursor_str);
+
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
     write(STDOUT_FILENO, CLEAR_SCREEN MOVE_CURSOR_0_0, 7);
     write(STDOUT_FILENO, ab.data, ab.len);

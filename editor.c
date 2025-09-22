@@ -33,28 +33,44 @@ void ed_process_key(Key key) {
 }
 
 void ed_render() {
-    size_t cx = 0, cy = 0;
+    size_t x = 0, y = 0;
     size_t i = editor.draw_off + editor.col_off;
 
-    while (i < tb_length(editor.tb) && cy < ui_rows() - 1) {
+    while (i < tb_length(editor.tb) && y < ui_rows() - 1) {
         char ch = tb_get(editor.tb, i);
 
-        if (ch == '\n' || cx == ui_cols() - 1) {
-            if (cx < ui_cols() - 1) {
+        if (i == editor.cursor) {
+            ui_set_cursor(y, x);
+        }
+
+        if (ch == '\n' || x == ui_cols() - 1) {
+            if (x < ui_cols() - 1) {
                 ui_draw("\n\r");
             }
-            cx = 0;
-            cy++;
+            x = 0;
+            y++;
             i += editor.col_off;
         } else {
             ui_draw_ch(ch);
-            cx++;
+            x++;
         }
 
         i++;
     }
 
     ui_draw(editor.msg);
+}
+
+void ed_next_char() {
+    if (editor.cursor < tb_length(editor.tb)) {
+        editor.cursor++;
+    }
+}
+
+void ed_prev_char() {
+    if (editor.cursor > 0) {
+        editor.cursor--;
+    }
 }
 
 void ed_init() {

@@ -24,6 +24,8 @@ const Keybind keybinds[] = {
     {INSERT, 'n', normal_mode},
     {NORMAL, 'g', greet},
     {INSERT, 'g', greet_ed},
+    {NORMAL, 'l', ed_next_char},
+    {NORMAL, 'h', ed_prev_char},
 };
 
 const size_t num_binds = sizeof(keybinds) / sizeof(Keybind);
